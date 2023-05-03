@@ -35,7 +35,7 @@ jobs:
     - name: Build and push yunzai image
       uses: docker/build-push-action@v4
       with:
-        context: ./Miao-Yunzai
+        context: .
         push: true
         tags: |
           ghcr.io/${{ github.repository }}:${{ steps.package_version.outputs.version }}
