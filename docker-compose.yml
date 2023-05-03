@@ -1,0 +1,42 @@
+version: "3"
+services:
+  miao-yunzai:
+    container_name: miao-yunzai
+    build: .
+    restart: always
+    ports:
+      - "3321:3321"
+    volumes:
+      - /data/Miao-Yunzai/config:/app/Miao-Yunzai/config/config/
+      - /data/Miao-Yunzai/logs:/app/Miao-Yunzai/logs
+      - /data/Miao-Yunzai/data:/app/Miao-Yunzai/data
+      - /data/Miao-Yunzai/node_modules:/app/Miao-Yunzai/node_modules
+      - /data/Miao-Yunzai/.pnpm:/app/.pnpm
+      - /data/Miao-Yunzai/plugins:/app/Miao-Yunzai/plugins
+      # 因为yunzai中plugins目录下默认还有一些自带插件，所以需要额外挂载一下保证这些插件内容不会被覆盖，相当于白名单策略。
+      - /app/Miao-Yunzai/plugins/example
+      - /app/Miao-Yunzai/plugins/genshin
+      - /app/Miao-Yunzai/plugins/other
+      - /app/Miao-Yunzai/plugins/system
+    depends_on:
+      redis: { condition: service_healthy }
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  redis:
+    container_name: miao-redis
+    image: redis:alpine
+    restart: always
+    volumes:
+      # 前往 https://download.redis.io/redis-stable/redis.conf 下载配置文件，放入 ./redis/config 文件夹中
+      # - ./redis/config:/etc/redis/    # Redis配置文件
+      - /data/Miao-redis/data:/data
+      - /data/Miao-redis/logs:/logs
+    # command: /etc/redis/redis.conf    # 取消注释以应用Redis配置文件
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      start_period: 10s
+      interval: 5s
+      timeout: 1s

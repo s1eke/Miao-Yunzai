@@ -1,0 +1,43 @@
+name: Build and Push Yunzai Image
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-yunzai-image:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Download package.json
+      run: |
+        curl -s https://raw.githubusercontent.com/yoimiya-kokomi/Miao-Yunzai/master/package.json > package.json
+
+    - name: Extract version from package.json
+      id: package_version
+      run: |
+        echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push yunzai image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./Miao-Yunzai
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository }}:${{ steps.package_version.outputs.version }}
+        build-args: |
+          GITHUB_ACTIONS=1
