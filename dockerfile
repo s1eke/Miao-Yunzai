@@ -8,6 +8,7 @@ RUN if [ ! "$GITHUB_ACTIONS" ]; then \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     wget \
+    vim \
     xz-utils \
     dos2unix \
     ffmpeg \
